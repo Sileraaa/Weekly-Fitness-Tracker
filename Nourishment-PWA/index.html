@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <meta name="theme-color" content="#050a18"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="Nourishment"/>
+  <meta name="description" content="Weekly nutrition tracker — calories, protein, fiber, weight"/>
+  <link rel="manifest" href="manifest.json"/>
+  <link rel="apple-touch-icon" href="icon-192.png"/>
+  <title>Nourishment</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet"/>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --cal: #e8a838; --protein: #a78bfa; --fiber: #34d399;
+      --weight: #f472b6; --gold: #c9a84c; --ember: #e05c2a;
+      --bg: #050a18; --card: rgba(4,8,20,0.78); --text: #d4c5a9;
+      --sub: #2a3548; --border: rgba(255,255,255,0.05);
+    }
+    html, body {
+      height: 100%; background: var(--bg); color: var(--text);
+      font-family: 'Cinzel', serif; overflow-x: hidden;
+      -webkit-tap-highlight-color: transparent;
+    }
+    input[type=number] { -moz-appearance: textfield; }
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
+    button { cursor: pointer; }
+
+    /* Background */
+    #sky-bg { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+    #sky-bg .sky { position: absolute; inset: 0; background: linear-gradient(180deg,#050a18 0%,#0a0f22 35%,#0d1225 65%,#080c18 100%); }
+    #sky-bg .aurora1 { position:absolute;top:0;left:-20%;right:-20%;height:50%;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(99,38,130,0.28) 0%,transparent 70%);animation:auroraA 9s ease-in-out infinite alternate; }
+    #sky-bg .aurora2 { position:absolute;top:0;left:-10%;right:-10%;height:38%;background:radial-gradient(ellipse 60% 40% at 25% 0%,rgba(29,78,138,0.22) 0%,transparent 70%);animation:auroraB 13s ease-in-out infinite alternate; }
+    #sky-bg .aurora3 { position:absolute;top:0;left:0;right:0;height:32%;background:radial-gradient(ellipse 55% 38% at 72% 0%,rgba(6,120,100,0.18) 0%,transparent 70%);animation:auroraC 16s ease-in-out infinite alternate; }
+    .star { position:absolute;border-radius:50%;background:#fff; }
+    #sky-bg .fog { position:absolute;bottom:0;left:0;right:0;height:13%;background:linear-gradient(0deg,rgba(6,10,20,1) 0%,rgba(6,10,20,0.85) 55%,transparent 100%); }
+    #sky-bg .ground { position:absolute;bottom:0;left:0;right:0;height:9%;background:#050a14; }
+
+    /* Layout */
+    #app { position:relative; z-index:2; max-width:520px; margin:0 auto; min-height:100vh; padding-bottom:100px; }
+
+    /* Header */
+    .header { padding: calc(env(safe-area-inset-top) + 36px) 22px 0; text-align:center; position:relative; }
+    .header-eyebrow { font-size:9px;letter-spacing:4px;color:rgba(201,168,76,0.6);text-transform:uppercase;margin-bottom:8px;font-family:'Crimson Text',serif;font-style:italic; }
+    .header-title { font-size:28px;font-weight:900;color:#ede0c8;text-shadow:0 0 30px rgba(201,168,76,0.45),0 2px 8px rgba(0,0,0,0.9);letter-spacing:3px;animation:runeGlow 4s ease-in-out infinite; }
+    .header-sub { font-size:10px;color:var(--sub);letter-spacing:1.5px;font-family:'Crimson Text',serif;font-style:italic;margin-top:4px; }
+    .btn-goals { position:absolute;top:calc(env(safe-area-inset-top) + 32px);right:18px;background:rgba(201,168,76,0.07);border:1px solid rgba(201,168,76,0.22);border-radius:9px;color:var(--gold);padding:7px 13px;font-size:9px;letter-spacing:1.5px;font-family:'Cinzel',serif;text-transform:uppercase; }
+
+    /* Divider */
+    .divider { display:flex;align-items:center;gap:10px;margin:16px 22px 0;opacity:.22; }
+    .divider-line { flex:1;height:1px; }
+    .divider-gem { color:var(--gold);font-size:13px; }
+
+    /* Nav */
+    .nav { display:flex;margin:14px 22px 0;gap:6px; }
+    .nav-btn { flex:1;padding:11px 0;border-radius:10px;font-size:10px;font-weight:600;font-family:'Cinzel',serif;letter-spacing:.5px;backdrop-filter:blur(10px);transition:all .2s;border:1px solid var(--border);background:rgba(4,8,20,.62);color:#2a3a4a; }
+    .nav-btn.active { border-color:rgba(201,168,76,.44);background:rgba(201,168,76,.09);color:var(--gold);text-shadow:0 0 12px rgba(201,168,76,.55); }
+
+    /* Tab content */
+    .tab { padding:18px 22px 0;display:none; }
+    .tab.active { display:flex;flex-direction:column;gap:14px; }
+
+    /* Toast */
+    .toast { background:rgba(52,211,153,.09);border:1px solid rgba(52,211,153,.28);border-radius:12px;padding:11px 16px;font-size:12px;color:var(--fiber);font-family:'Crimson Text',serif;font-style:italic;text-align:center;animation:fadeUp .35s ease; }
+
+    /* Remaining banners */
+    .rem-section-label { font-size:8.5px;letter-spacing:3px;color:var(--sub);text-transform:uppercase;text-align:center; }
+    .rem-banner { background:linear-gradient(135deg,rgba(8,13,26,.92),rgba(12,18,36,.95));border-radius:13px;padding:13px 16px;display:flex;align-items:center;gap:14px;backdrop-filter:blur(14px);animation:fadeUp .35s ease; }
+    .rem-icon { font-size:22px;width:42px;height:42px;display:flex;align-items:center;justify-content:center;border-radius:9px;flex-shrink:0; }
+    .rem-label { font-size:8.5px;letter-spacing:2.5px;text-transform:uppercase;font-family:'Cinzel',serif;margin-bottom:4px; }
+    .rem-value { font-size:26px;font-weight:800;font-variant-numeric:tabular-nums;font-family:'Cinzel',serif; }
+    .rem-unit { font-size:11px; }
+    .rem-warn { font-size:9.5px;color:var(--ember);margin-top:1px;font-family:'Crimson Text',serif;font-style:italic; }
+
+    /* Day rows */
+    .day-row { border-radius:12px;padding:11px 13px;backdrop-filter:blur(12px);transition:border .2s;background:rgba(4,8,20,.72);border:1px solid rgba(255,255,255,.04); }
+    .day-row.today { background:linear-gradient(135deg,rgba(201,168,76,.06),rgba(8,13,26,.92));border-color:rgba(201,168,76,.3); }
+    .day-row.done { border-color:rgba(52,211,153,.18); }
+    .day-header { display:flex;justify-content:space-between;align-items:center;margin-bottom:9px; }
+    .day-name { font-size:10px;font-weight:600;letter-spacing:2px;color:#2a3548; }
+    .day-name.today { color:var(--gold);text-shadow:0 0 10px rgba(201,168,76,.55); }
+    .day-name.done { color:rgba(52,211,153,.75); }
+    .day-kcal { font-size:9.5px;color:rgba(232,168,56,.6);font-family:'Crimson Text',serif; }
+    .day-inputs { display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:7px; }
+    .day-inputs label { font-size:7.5px;letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:4px; }
+    .day-inputs input { width:100%;background:rgba(4,8,20,.75);border-radius:8px;color:#c8baa0;padding:7px 5px;font-size:13px;text-align:center;outline:none;font-family:'Cinzel',serif;transition:border .2s;border:1px solid rgba(201,168,76,.15); }
+    .day-inputs input:focus { border-color:rgba(201,168,76,.4); }
+
+    /* Avg section */
+    .avg-divider { display:flex;align-items:center;gap:8px;opacity:.2; }
+    .avg-label { font-size:8.5px;letter-spacing:3px;color:var(--sub);text-transform:uppercase;text-align:center; }
+    .stat-grid { display:grid;grid-template-columns:1fr 1fr;gap:9px; }
+    .stat-card { background:linear-gradient(135deg,rgba(8,13,26,.88),rgba(12,18,36,.92));border-radius:14px;padding:15px 17px;display:flex;flex-direction:column;gap:3px;box-shadow:0 4px 20px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.04);backdrop-filter:blur(14px);position:relative;overflow:hidden; }
+    .stat-card::after { content:'';position:absolute;top:-18px;right:-18px;width:72px;height:72px;border-radius:50%; }
+    .stat-eyebrow { font-size:8.5px;letter-spacing:2.5px;text-transform:uppercase;font-family:'Cinzel',serif; }
+    .stat-value { font-size:25px;font-weight:700;font-variant-numeric:tabular-nums;font-family:'Cinzel',serif; }
+    .stat-unit { font-size:11px; }
+    .stat-sub { font-size:10px;color:var(--sub);margin-top:1px;font-family:'Crimson Text',serif; }
+
+    /* Rune bars */
+    .rune-bars { background:rgba(4,8,20,.72);border:1px solid rgba(255,255,255,.05);border-radius:13px;padding:15px 17px;backdrop-filter:blur(12px);display:flex;flex-direction:column;gap:13px; }
+    .rune-bar-row label { display:flex;justify-content:space-between;font-size:8.5px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px; }
+    .rune-bar-track { position:relative;height:7px;border-radius:4px;background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.05);overflow:hidden; }
+    .rune-bar-fill { position:absolute;left:0;top:0;bottom:0;border-radius:4px;transition:width .9s cubic-bezier(.4,0,.2,1); }
+    .rune-tick { position:absolute;top:0;bottom:0;width:1px;background:rgba(255,255,255,.08); }
+
+    /* Complete btn */
+    .btn-complete { width:100%;padding:16px;background:linear-gradient(135deg,#6b4f0e,#c9a84c 50%,#6b4f0e);border:1px solid rgba(201,168,76,.6);border-radius:13px;color:#0a0e18;font-size:12px;font-weight:700;font-family:'Cinzel',serif;letter-spacing:2px;text-transform:uppercase;animation:pulse 2.2s ease-in-out infinite; }
+
+    /* History */
+    .week-card { background:rgba(4,8,20,.76);border:1px solid rgba(255,255,255,.05);border-radius:13px;overflow:hidden;backdrop-filter:blur(12px);transition:border .3s; }
+    .week-card.open { border-color:rgba(201,168,76,.3); }
+    .week-btn { width:100%;padding:14px 17px;background:none;border:none;display:flex;justify-content:space-between;align-items:center;color:var(--text);font-family:'Cinzel',serif;text-align:left; }
+    .week-title { font-size:11px;font-weight:600;color:#6a5a4a; }
+    .week-card.open .week-title { color:var(--gold); }
+    .week-meta { font-size:9.5px;color:var(--sub);margin-top:3px;font-family:'Crimson Text',serif; }
+    .week-chevron { color:rgba(201,168,76,.55);font-size:12px; }
+    .week-body { padding:0 17px 17px;border-top:1px solid rgba(201,168,76,.08); }
+    .remarks { margin-top:13px;background:rgba(201,168,76,.04);border:1px solid rgba(201,168,76,.1);border-radius:10px;padding:12px 14px; }
+    .remarks-title { font-size:8px;letter-spacing:2.5px;color:rgba(201,168,76,.55);text-transform:uppercase;margin-bottom:9px; }
+    .remark { font-size:12px;margin-bottom:5px;line-height:1.5;font-family:'Crimson Text',serif;font-style:italic; }
+    .ledger-title { font-size:8px;letter-spacing:2.5px;color:#233;text-transform:uppercase;margin-bottom:8px;margin-top:13px; }
+    .ledger-row { display:flex;justify-content:space-between;font-size:11px;color:var(--sub);padding:5px 0;border-bottom:1px solid rgba(255,255,255,.03);font-family:'Crimson Text',serif; }
+    .ledger-row:last-child { border-bottom:none; }
+    .ledger-day { color:#3a4a5a; }
+
+    /* Stats */
+    .trend-section { background:rgba(4,8,20,.8);border:1px solid rgba(201,168,76,.1);border-radius:15px;padding:18px;backdrop-filter:blur(14px); }
+    .trend-title { font-size:8.5px;letter-spacing:3px;color:rgba(201,168,76,.55);text-transform:uppercase;margin-bottom:20px;text-align:center; }
+    .trend-item { margin-bottom:26px; }
+    .trend-header { display:flex;justify-content:space-between;margin-bottom:9px; }
+    .trend-label { font-size:10px;letter-spacing:1.5px;text-transform:uppercase;font-family:'Cinzel',serif; }
+    .trend-delta { font-size:10.5px;font-weight:700; }
+    .trend-chart { background:rgba(0,0,0,.35);border-radius:10px;padding:8px 4px; }
+    .trend-weeks { display:flex;justify-content:space-between;margin-top:4px; }
+    .trend-wk { font-size:8px;color:#2a3445;font-family:'Cinzel',serif; }
+
+    /* Goals modal */
+    .modal-backdrop { position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:100;display:flex;align-items:flex-end;justify-content:center; }
+    .modal { background:linear-gradient(180deg,#0c1524,#070d1a);border-radius:20px 20px 0 0;padding:28px 24px calc(env(safe-area-inset-bottom) + 50px);width:100%;max-width:520px;border:1px solid rgba(201,168,76,.18);border-bottom:none;box-shadow:0 -24px 60px rgba(0,0,0,.85); }
+    .modal-title { font-size:13px;font-weight:700;color:var(--gold);letter-spacing:2.5px;text-align:center; }
+    .modal-sub { font-size:11px;color:var(--sub);margin-top:5px;font-family:'Crimson Text',serif;font-style:italic;text-align:center;margin-bottom:22px; }
+    .goal-field { margin-bottom:13px; }
+    .goal-label { font-size:8.5px;color:#3a4a5a;letter-spacing:2px;text-transform:uppercase;display:block;margin-bottom:5px; }
+    .goal-input { width:100%;background:rgba(4,8,20,.75);border:1px solid rgba(201,168,76,.18);border-radius:8px;color:#c8baa0;padding:10px 12px;font-size:14px;outline:none;font-family:'Cinzel',serif; }
+    .btn-seal { width:100%;margin-top:20px;padding:14px;background:linear-gradient(135deg,#6b4f0e,#c9a84c 50%,#6b4f0e);border:1px solid rgba(201,168,76,.55);border-radius:12px;color:#0a0e18;font-size:11px;font-weight:700;font-family:'Cinzel',serif;letter-spacing:2px;text-transform:uppercase; }
+
+    /* Empty states */
+    .empty { text-align:center;padding:60px 0; }
+    .empty-icon { font-size:36px;margin-bottom:14px; }
+    .empty-text { font-size:13px;color:var(--sub);font-family:'Crimson Text',serif;font-style:italic; }
+
+    /* Animations */
+    @keyframes auroraA { from{opacity:.55;transform:translateX(-5%) scaleX(1)} to{opacity:1;transform:translateX(5%) scaleX(1.06)} }
+    @keyframes auroraB { from{opacity:.38;transform:translateX(3%)} to{opacity:.82;transform:translateX(-4%)} }
+    @keyframes auroraC { from{opacity:.28} to{opacity:.72;transform:translateX(5%)} }
+    @keyframes twinkle { from{opacity:.08} to{opacity:.75} }
+    @keyframes runeGlow { 0%,100%{text-shadow:0 0 10px rgba(201,168,76,.33)} 50%{text-shadow:0 0 24px rgba(201,168,76,.75),0 0 48px rgba(201,168,76,.33)} }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes pulse { 0%,100%{box-shadow:0 0 20px rgba(201,168,76,.2)} 50%{box-shadow:0 0 36px rgba(201,168,76,.55)} }
+  </style>
+</head>
+<body>
+
+<!-- Sky Background -->
+<div id="sky-bg">
+  <div class="sky"></div>
+  <div class="aurora1"></div>
+  <div class="aurora2"></div>
+  <div class="aurora3"></div>
+  <div id="stars"></div>
+  <svg viewBox="0 0 520 200" preserveAspectRatio="none" style="position:absolute;bottom:33%;left:0;right:0;width:100%;opacity:.15">
+    <path d="M0,200 L0,140 L40,90 L80,120 L120,60 L160,100 L200,40 L240,85 L280,30 L320,75 L360,50 L400,90 L440,45 L480,80 L520,110 L520,200 Z" fill="#3a4a6b"/>
+  </svg>
+  <svg viewBox="0 0 520 200" preserveAspectRatio="none" style="position:absolute;bottom:22%;left:0;right:0;width:100%;opacity:.4">
+    <path d="M0,200 L0,160 L30,120 L70,78 L100,108 L140,52 L180,88 L220,43 L260,74 L300,33 L340,63 L380,98 L420,58 L460,93 L520,128 L520,200 Z" fill="#1a2238"/>
+    <path d="M140,52 L128,70 L153,70 Z M220,43 L208,63 L234,63 Z M300,33 L287,54 L314,54 Z M420,58 L408,76 L434,76 Z" fill="rgba(190,210,240,0.35)"/>
+  </svg>
+  <svg viewBox="0 0 520 200" preserveAspectRatio="none" style="position:absolute;bottom:13%;left:0;right:0;width:100%;opacity:.65">
+    <path d="M0,200 L0,170 L50,130 L90,148 L130,98 L160,118 L200,78 L240,108 L280,68 L320,93 L360,118 L400,83 L440,118 L480,143 L520,158 L520,200 Z" fill="#0e1620"/>
+    <path d="M130,98 L118,116 L143,116 Z M200,78 L188,97 L213,97 Z M280,68 L267,89 L294,89 Z M400,83 L388,103 L413,103 Z" fill="rgba(200,222,255,0.28)"/>
+  </svg>
+  <svg viewBox="0 0 520 100" preserveAspectRatio="none" style="position:absolute;bottom:9%;left:0;right:0;width:100%;opacity:.85" id="trees-svg"></svg>
+  <div class="fog"></div>
+  <div class="ground"></div>
+</div>
+
+<!-- App -->
+<div id="app">
+  <div class="header">
+    <div class="header-eyebrow">The Scrolls of</div>
+    <h1 class="header-title">NOURISHMENT</h1>
+    <div class="header-sub" id="week-label"></div>
+    <button class="btn-goals" onclick="openGoals()">⚙ Goals</button>
+  </div>
+
+  <div class="divider">
+    <div class="divider-line" style="background:linear-gradient(90deg,transparent,#c9a84c)"></div>
+    <span class="divider-gem">⬥</span>
+    <div class="divider-line" style="background:linear-gradient(90deg,#c9a84c,transparent)"></div>
+  </div>
+
+  <nav class="nav">
+    <button class="nav-btn active" data-tab="track" onclick="switchTab('track')">⚔ Track</button>
+    <button class="nav-btn" data-tab="stats" onclick="switchTab('stats')">📜 Stats</button>
+    <button class="nav-btn" data-tab="history" onclick="switchTab('history')">🏰 Chronicle</button>
+  </nav>
+
+  <!-- TRACK TAB -->
+  <div class="tab active" id="tab-track"></div>
+
+  <!-- STATS TAB -->
+  <div class="tab" id="tab-stats"></div>
+
+  <!-- HISTORY TAB -->
+  <div class="tab" id="tab-history"></div>
+</div>
+
+<!-- Goals Modal -->
+<div class="modal-backdrop" id="goals-modal" style="display:none" onclick="closeGoals(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-title">⚙ Sacred Oaths</div>
+    <div class="modal-sub">Bind your daily covenant to the stone</div>
+    <div class="goal-field"><label class="goal-label">🔥 Daily Calorie Oath (kcal)</label><input class="goal-input" id="g-cal" type="number"/></div>
+    <div class="goal-field"><label class="goal-label">⚔️ Daily Protein Pledge (g)</label><input class="goal-input" id="g-protein" type="number"/></div>
+    <div class="goal-field"><label class="goal-label">🌿 Daily Fiber Tribute (g)</label><input class="goal-input" id="g-fiber" type="number"/></div>
+    <div class="goal-field"><label class="goal-label">⚖️ Weight of Destiny (kg)</label><input class="goal-input" id="g-weight" type="number"/></div>
+    <button class="btn-seal" onclick="saveGoals()">✦ Seal the Covenant ✦</button>
+  </div>
+</div>
+
+<script>
+// ── Constants ──────────────────────────────────────────────
+const DAY_NAMES = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const WEEKS_KEY = 'nourishment-weeks-v2';
+const DAYS_KEY  = 'nourishment-days-v2';
+const GOALS_KEY = 'nourishment-goals-v2';
+const COLORS = { cal:'#e8a838', protein:'#a78bfa', fiber:'#34d399', weight:'#f472b6', gold:'#c9a84c', ember:'#e05c2a' };
+
+// ── State ──────────────────────────────────────────────────
+let goals = { calories:2000, protein:150, fiber:30, weight:70 };
+let days  = Array(7).fill(null).map(()=>({calories:'',protein:'',fiber:'',weight:''}));
+let completedWeeks = [];
+let currentTab = 'track';
+let openWeekId = null;
+
+// ── Storage helpers ────────────────────────────────────────
+function lsGet(k){ try{ return JSON.parse(localStorage.getItem(k)); }catch(e){return null;} }
+function lsSet(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+
+// ── Date helpers ───────────────────────────────────────────
+function getWeekId(d=new Date()){
+  const t=new Date(d); t.setHours(0,0,0,0);
+  t.setDate(t.getDate()-((t.getDay()+6)%7));
+  return t.toISOString().slice(0,10);
+}
+function fmtDate(iso){
+  const d=new Date(iso+'T00:00:00');
+  return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+}
+const currentWeekId = getWeekId();
+
+// ── Math ───────────────────────────────────────────────────
+function avg(arr){
+  const v=arr.filter(x=>x!==''&&x!==null&&!isNaN(Number(x)));
+  return v.length?v.reduce((a,b)=>a+Number(b),0)/v.length:null;
+}
+function calcRemaining(key,goalVal){
+  const filled=days.filter(d=>d[key]!==''&&d[key]!==null);
+  const daysLeft=7-filledCount();
+  if(!filled.length||daysLeft===0) return null;
+  const total=filled.reduce((a,d)=>a+Number(d[key]),0);
+  return (goalVal*7-total)/daysLeft;
+}
+function filledCount(){
+  return days.filter(d=>d.calories!==''&&d.calories!==null).length;
+}
+
+// ── Init ───────────────────────────────────────────────────
+function init(){
+  buildStars(); buildTrees();
+  const sg=lsGet(GOALS_KEY); if(sg) goals=sg;
+  const sd=lsGet(DAYS_KEY);  if(sd) days=sd;
+  const sw=lsGet(WEEKS_KEY); if(sw) completedWeeks=sw;
+  document.getElementById('week-label').textContent='Week of '+fmtDate(currentWeekId);
+  renderAll();
+}
+
+// ── Background helpers ──────────────────────────────────────
+function buildStars(){
+  const c=document.getElementById('stars');
+  for(let i=0;i<65;i++){
+    const s=document.createElement('div');
+    s.className='star';
+    const big=i%6===0;
+    s.style.cssText=`width:${big?2:1}px;height:${big?2:1}px;opacity:${0.15+(i%4)*0.15};left:${(i*17+3)%100}%;top:${(i*13+5)%44}%;animation:twinkle ${2+(i%4)}s ease-in-out infinite alternate;animation-delay:${(i*.25)%3.5}s`;
+    c.appendChild(s);
+  }
+}
+function buildTrees(){
+  const xs=[0,28,52,80,108,140,168,198,228,258,288,322,352,382,412,448,478,508];
+  let p='';
+  xs.forEach((x,i)=>{
+    const h=28+(i%3)*14, w=11+(i%3)*4;
+    p+=`<polygon points="${x},${100-h} ${x-w/2},100 ${x+w/2},100" fill="#090f1c"/>`;
+    p+=`<polygon points="${x},${100-h-9} ${x-w*.38},${100-h+12} ${x+w*.38},${100-h+12}" fill="#090f1c"/>`;
+  });
+  document.getElementById('trees-svg').innerHTML=p;
+}
+
+// ── Render ──────────────────────────────────────────────────
+function renderAll(){
+  renderTrack();
+  renderStats();
+  renderHistory();
+}
+
+function renderTrack(){
+  const fc=filledCount();
+  const todayIdx=Math.min(fc,6);
+  const daysLeft=7-fc;
+  const remCal=fc>0&&fc<7?calcRemaining('calories',goals.calories):null;
+  const remPro=fc>0&&fc<7?calcRemaining('protein',goals.protein):null;
+  const remFib=fc>0&&fc<7?calcRemaining('fiber',goals.fiber):null;
+  const curCal=avg(days.map(d=>d.calories));
+  const curPro=avg(days.map(d=>d.protein));
+  const curFib=avg(days.map(d=>d.fiber));
+  const curWt =avg(days.map(d=>d.weight));
+
+  let html='';
+
+  // Remaining banners
+  if(remCal!==null||remPro!==null||remFib!==null){
+    html+=`<div class="rem-section-label">— needed daily avg for ${daysLeft} remaining day${daysLeft!==1?'s':''} —</div>`;
+    if(remCal!==null) html+=remBanner('🔥','Calories needed',remCal,daysLeft,COLORS.cal,'kcal');
+    if(remPro!==null) html+=remBanner('⚔️','Protein needed',remPro,daysLeft,COLORS.protein,'g');
+    if(remFib!==null) html+=remBanner('🌿','Fiber needed',remFib,daysLeft,COLORS.fiber,'g');
+  }
+
+  // Day rows
+  days.forEach((day,i)=>{
+    const isToday=i===todayIdx;
+    const isDone=day.calories!=='';
+    let cls='day-row'+(isToday?' today':isDone?' done':'');
+    let nameCls='day-name'+(isToday?' today':isDone?' done':'');
+    html+=`<div class="${cls}">
+      <div class="day-header">
+        <span class="${nameCls}">${DAY_NAMES[i]}${isToday?' · Today':isDone?' · ✓':''}</span>
+        ${day.calories!==''?`<span class="day-kcal">${Number(day.calories).toLocaleString()} kcal</span>`:''}
+      </div>
+      <div class="day-inputs">
+        ${['calories','protein','fiber','weight'].map((k,ki)=>{
+          const clrs=[COLORS.cal,COLORS.protein,COLORS.fiber,COLORS.weight];
+          const lbls=['Cal','Prot','Fib','Wt'];
+          return `<div>
+            <label style="color:${clrs[ki]}99">${lbls[ki]}</label>
+            <input type="number" inputmode="decimal" value="${day[k]}" placeholder="—"
+              style="border-color:${clrs[ki]}1e"
+              oninput="updateDay(${i},'${k}',this.value)"/>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  });
+
+  // Averages
+  if(fc>0){
+    html+=`<div class="avg-divider"><div style="flex:1;height:1px;background:${COLORS.gold}"></div><span style="color:${COLORS.gold};font-size:11px">✦</span><div style="flex:1;height:1px;background:${COLORS.gold}"></div></div>`;
+    html+=`<div class="avg-label">Current averages · ${fc}/7 days</div>`;
+    html+=`<div class="stat-grid">
+      ${statCard('🔥 Calories',curCal,'kcal',COLORS.cal,`Goal: ${goals.calories}`)}
+      ${statCard('⚔️ Protein',curPro,'g',COLORS.protein,`Goal: ${goals.protein}g`)}
+      ${statCard('🌿 Fiber',curFib,'g',COLORS.fiber,`Goal: ${goals.fiber}g`)}
+      ${statCard('⚖️ Weight',curWt,'kg',COLORS.weight,`Target: ${goals.weight}kg`)}
+    </div>`;
+    // Rune bars
+    html+='<div class="rune-bars">';
+    [[curCal,goals.calories,COLORS.cal,'Calories'],[curPro,goals.protein,COLORS.protein,'Protein'],[curFib,goals.fiber,COLORS.fiber,'Fiber']].forEach(([v,m,c,l])=>{
+      if(v===null) return;
+      const pct=Math.min(100,Math.max(0,(v/m)*100));
+      html+=`<div class="rune-bar-row">
+        <label><span style="color:${c}88">${l}</span><span style="color:${c}88">${pct.toFixed(0)}%</span></label>
+        <div class="rune-bar-track">
+          <div class="rune-bar-fill" style="width:${pct}%;background:linear-gradient(90deg,${c}66,${c});box-shadow:0 0 8px ${c}55"></div>
+          <div class="rune-tick" style="left:25%"></div><div class="rune-tick" style="left:50%"></div><div class="rune-tick" style="left:75%"></div>
+        </div>
+      </div>`;
+    });
+    html+='</div>';
+    if(fc===7){
+      html+='<button class="btn-complete" onclick="completeWeek()">⚔ Complete Week — Etch the Rune ⚔</button>';
+    }
+  }
+
+  document.getElementById('tab-track').innerHTML=html;
+}
+
+function remBanner(icon,label,perDay,daysLeft,color,suffix){
+  const over=perDay<0;
+  const val=over?'+'+Math.abs(Math.round(perDay)):Math.round(perDay);
+  return `<div class="rem-banner" style="border:1px solid ${over?COLORS.ember:color}3a;box-shadow:0 0 18px ${color}12">
+    <div class="rem-icon" style="background:${color}15;border:1px solid ${color}2a">${icon}</div>
+    <div style="flex:1">
+      <div class="rem-label" style="color:${color}77">${label} · ${daysLeft} day${daysLeft!==1?'s':''} left</div>
+      <div>
+        <span class="rem-value" style="color:${over?COLORS.ember:color};text-shadow:0 0 16px ${over?COLORS.ember:color}55">${val}</span>
+        <span class="rem-unit" style="color:${color}55"> ${suffix}/day</span>
+      </div>
+      ${over?`<div class="rem-warn">Over weekly pace — ease the burden</div>`:''}
+    </div>
+  </div>`;
+}
+
+function statCard(label,value,unit,color,sub){
+  const v=(value!==null&&value!==undefined)?value.toFixed(1):'—';
+  return `<div class="stat-card" style="border:1px solid ${color}2e">
+    <div class="stat-card" style="position:absolute;top:-18px;right:-18px;width:72px;height:72px;border-radius:50%;background:${color}0a;border:none;padding:0"></div>
+    <span class="stat-eyebrow" style="color:${color}88">${label}</span>
+    <div><span class="stat-value" style="color:${color}">${v}</span><span class="stat-unit" style="color:${color}66"> ${unit}</span></div>
+    <span class="stat-sub">${sub||''}</span>
+  </div>`;
+}
+
+function renderStats(){
+  let html='';
+  if(!completedWeeks.length){
+    html=`<div class="empty"><div class="empty-icon">📜</div><div class="empty-text">The chronicle awaits your first completed week</div></div>`;
+  } else {
+    const last=completedWeeks[completedWeeks.length-1];
+    html+=`<div class="stat-grid">
+      ${statCard('📜 Weeks',completedWeeks.length,'',COLORS.gold,'')}
+      ${statCard('🔥 Latest Cal',last.avgCalories,'kcal',COLORS.cal,'')}
+      ${statCard('⚔️ Latest Prot',last.avgProtein,'g',COLORS.protein,'')}
+      ${statCard('⚖️ Latest Wt',last.avgWeight,'kg',COLORS.weight,'')}
+    </div>`;
+    html+=`<div class="trend-section"><div class="trend-title">— Trend Runes —</div>`;
+    if(completedWeeks.length<2){
+      html+=`<div class="empty-text" style="text-align:center">Complete 2 or more weeks to reveal the runes</div>`;
+    } else {
+      const recent=completedWeeks.slice(-8);
+      [['avgCalories','Calories',COLORS.cal,'kcal','🔥'],['avgProtein','Protein',COLORS.protein,'g','⚔️'],['avgFiber','Fiber',COLORS.fiber,'g','🌿'],['avgWeight','Weight',COLORS.weight,'kg','⚖️']].forEach(([key,label,color,unit,icon])=>{
+        const vals=recent.map(w=>w[key]).filter(v=>v!==null);
+        if(vals.length<2) return;
+        const min=Math.min(...vals), max=Math.max(...vals), range=max-min||1;
+        const W=300,H=70;
+        const pts=recent.map((w,i)=>{
+          if(w[key]===null) return null;
+          const x=(i/(recent.length-1))*(W-24)+12;
+          const y=H-10-((w[key]-min)/range)*(H-20);
+          return `${x},${y}`;
+        }).filter(Boolean);
+        const trend=vals[vals.length-1]-vals[0];
+        const trendClr=trend>0?COLORS.cal:trend<0?COLORS.fiber:'#445';
+        const trendStr=trend>0?`▲ +${trend.toFixed(1)}`:trend<0?`▼ ${trend.toFixed(1)}`:'→ 0';
+        const polyFill=pts.length>1?`<polygon points="${pts[0].split(',')[0]},${H} ${pts.join(' ')} ${pts[pts.length-1].split(',')[0]},${H}" fill="url(#g${key})"/>`:'';
+        const circles=recent.map((w,i)=>{
+          if(w[key]===null) return '';
+          const x=(i/(recent.length-1))*(W-24)+12;
+          const y=H-10-((w[key]-min)/range)*(H-20);
+          return `<circle cx="${x}" cy="${y}" r="5" fill="#070d1e" stroke="${color}" stroke-width="2"/><circle cx="${x}" cy="${y}" r="2" fill="${color}"/>`;
+        }).join('');
+        html+=`<div class="trend-item">
+          <div class="trend-header">
+            <span class="trend-label" style="color:${color}bb">${icon} ${label}</span>
+            <span class="trend-delta" style="color:${trendClr}">${trendStr} ${unit}</span>
+          </div>
+          <div class="trend-chart" style="border:1px solid ${color}1a">
+            <svg width="100%" viewBox="0 0 ${W} ${H}" overflow="visible">
+              <defs><linearGradient id="g${key}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${color}" stop-opacity=".28"/><stop offset="100%" stop-color="${color}" stop-opacity="0"/></linearGradient></defs>
+              ${polyFill}
+              <polyline points="${pts.join(' ')}" fill="none" stroke="${color}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" opacity=".9"/>
+              ${circles}
+            </svg>
+          </div>
+          <div class="trend-weeks">${recent.map(w=>`<span class="trend-wk">${(w.weekId||'').slice(5)}</span>`).join('')}</div>
+        </div>`;
+      });
+    }
+    html+='</div>';
+  }
+  document.getElementById('tab-stats').innerHTML=html;
+}
+
+function renderHistory(){
+  let html='';
+  if(!completedWeeks.length){
+    html=`<div class="empty"><div class="empty-icon">🏰</div><div class="empty-text">No scrolls in the archive yet</div></div>`;
+  } else {
+    [...completedWeeks].reverse().forEach(w=>{
+      const isOpen=openWeekId===w.weekId;
+      const remarks=getRemarks(w);
+      let body='';
+      if(isOpen){
+        body+=`<div class="week-body">
+          <div class="stat-grid" style="margin-top:14px">
+            ${statCard('🔥 Avg Cal',w.avgCalories,'kcal',COLORS.cal,'')}
+            ${statCard('⚔️ Avg Prot',w.avgProtein,'g',COLORS.protein,'')}
+            ${statCard('🌿 Avg Fiber',w.avgFiber,'g',COLORS.fiber,'')}
+            ${statCard('⚖️ Avg Wt',w.avgWeight,'kg',COLORS.weight,'')}
+          </div>`;
+        if(remarks.length){
+          body+=`<div class="remarks"><div class="remarks-title">Elder Scrolls Judgment</div>`;
+          remarks.forEach(([text,good])=>{ body+=`<div class="remark" style="color:${good?COLORS.fiber:COLORS.cal}">${text}</div>`; });
+          body+=`</div>`;
+        }
+        body+=`<div class="ledger-title">Daily Ledger</div>`;
+        w.days.forEach((d,di)=>{
+          body+=`<div class="ledger-row"><span class="ledger-day">${DAY_NAMES[di]}</span><span>`;
+          body+=d.calories!==''?`${Number(d.calories).toLocaleString()} kcal`:'—';
+          if(d.protein!=='') body+=` · ${d.protein}g`;
+          if(d.fiber!=='') body+=` · ${d.fiber}g fiber`;
+          body+=`</span></div>`;
+        });
+        body+=`</div>`;
+      }
+      html+=`<div class="week-card${isOpen?' open':''}">
+        <button class="week-btn" onclick="toggleWeek('${w.weekId}')">
+          <div>
+            <div class="week-title">Week of ${fmtDate(w.weekId)}</div>
+            <div class="week-meta">
+              ${w.avgCalories!==null?Math.round(w.avgCalories)+' kcal':'—'}
+              ${w.avgProtein!==null?' · '+w.avgProtein.toFixed(1)+'g prot':''}
+              ${w.avgFiber!==null?' · '+w.avgFiber.toFixed(1)+'g fiber':''}
+              ${w.avgWeight!==null?' · '+w.avgWeight.toFixed(1)+'kg':''}
+            </div>
+          </div>
+          <span class="week-chevron">${isOpen?'▲':'▼'}</span>
+        </button>
+        ${body}
+      </div>`;
+    });
+  }
+  document.getElementById('tab-history').innerHTML=html;
+}
+
+function getRemarks(w){
+  const r=[];
+  if(w.avgCalories!=null){ const d=w.avgCalories-w.goals.calories; if(Math.abs(d)<50) r.push(['✦ Calories aligned with the Elder Scroll',true]); else if(d>0) r.push([`☄ Avg ${Math.round(d)} kcal beyond the sacred limit`,false]); else r.push([`❄ Avg ${Math.round(Math.abs(d))} kcal beneath your destiny`,false]); }
+  if(w.avgProtein!=null){ if(w.avgProtein>=w.goals.protein) r.push(["⚔ Protein oath fulfilled — warrior's might maintained",true]); else r.push([`⚔ Protein ${(w.goals.protein-w.avgProtein).toFixed(1)}g short — the forge grows cold`,false]); }
+  if(w.avgFiber!=null){ if(w.avgFiber>=w.goals.fiber) r.push(['🌿 Fiber tribute accepted by the Hist',true]); else r.push([`🌿 Fiber ${(w.goals.fiber-w.avgFiber).toFixed(1)}g short — the roots hunger`,false]); }
+  if(w.avgWeight!=null&&w.goals.weight){ const d=w.avgWeight-w.goals.weight; if(Math.abs(d)<0.5) r.push(["⚖ Weight true to the Dragonborn's path",true]); else if(d>0) r.push([`⚖ ${d.toFixed(1)}kg above the marked stone`,false]); else r.push([`⚖ ${Math.abs(d).toFixed(1)}kg below the rune threshold`,false]); }
+  return r;
+}
+
+// ── Event handlers ─────────────────────────────────────────
+function switchTab(id){
+  currentTab=id;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  document.querySelector(`[data-tab="${id}"]`).classList.add('active');
+}
+
+function updateDay(i,key,val){
+  days[i][key]=val;
+  lsSet(DAYS_KEY,days);
+  renderTrack();
+}
+
+function toggleWeek(id){
+  openWeekId=openWeekId===id?null:id;
+  renderHistory();
+}
+
+function openGoals(){
+  document.getElementById('g-cal').value=goals.calories;
+  document.getElementById('g-protein').value=goals.protein;
+  document.getElementById('g-fiber').value=goals.fiber;
+  document.getElementById('g-weight').value=goals.weight;
+  document.getElementById('goals-modal').style.display='flex';
+}
+function closeGoals(e){ if(e.target===document.getElementById('goals-modal')) document.getElementById('goals-modal').style.display='none'; }
+function saveGoals(){
+  goals.calories=Number(document.getElementById('g-cal').value)||2000;
+  goals.protein=Number(document.getElementById('g-protein').value)||150;
+  goals.fiber=Number(document.getElementById('g-fiber').value)||30;
+  goals.weight=Number(document.getElementById('g-weight').value)||70;
+  lsSet(GOALS_KEY,goals);
+  document.getElementById('goals-modal').style.display='none';
+  renderAll();
+}
+
+function completeWeek(){
+  const weekData={
+    weekId:currentWeekId, completedAt:new Date().toISOString(),
+    avgCalories:avg(days.map(d=>d.calories)), avgProtein:avg(days.map(d=>d.protein)),
+    avgFiber:avg(days.map(d=>d.fiber)), avgWeight:avg(days.map(d=>d.weight)),
+    goals:{...goals}, days:[...days.map(d=>({...d}))]
+  };
+  completedWeeks=completedWeeks.filter(w=>w.weekId!==currentWeekId);
+  completedWeeks.push(weekData);
+  lsSet(WEEKS_KEY,completedWeeks);
+  days=Array(7).fill(null).map(()=>({calories:'',protein:'',fiber:'',weight:''}));
+  lsSet(DAYS_KEY,days);
+  switchTab('stats');
+  renderAll();
+  // toast
+  const t=document.createElement('div');
+  t.className='toast';
+  t.textContent='✦ The weekly rune is etched — your chronicle grows ✦';
+  document.getElementById('tab-stats').prepend(t);
+  setTimeout(()=>t.remove(),3500);
+}
+
+// ── Service Worker ─────────────────────────────────────────
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+
+// ── Boot ───────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>

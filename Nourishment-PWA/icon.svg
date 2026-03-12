@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#050a18"/>
+  <!-- Aurora glow -->
+  <radialGradient id="a" cx="50%" cy="0%" r="70%">
+    <stop offset="0%" stop-color="#6326820" stop-opacity="0.5"/>
+    <stop offset="100%" stop-color="#050a18" stop-opacity="0"/>
+  </radialGradient>
+  <ellipse cx="256" cy="30" rx="280" ry="180" fill="rgba(99,38,130,0.35)"/>
+  <ellipse cx="180" cy="20" rx="200" ry="130" fill="rgba(29,78,138,0.25)"/>
+  <!-- Mountains far -->
+  <polygon points="0,380 60,260 120,310 200,200 280,270 340,180 400,240 460,200 512,260 512,512 0,512" fill="#1a2238"/>
+  <!-- Mountains near -->
+  <polygon points="0,420 80,310 140,350 210,270 270,300 330,250 390,290 450,260 512,300 512,512 0,512" fill="#0e1620"/>
+  <!-- Snow caps -->
+  <polygon points="210,270 198,292 223,292" fill="rgba(200,222,255,0.4)"/>
+  <polygon points="330,250 318,273 343,273" fill="rgba(200,222,255,0.4)"/>
+  <!-- Pine trees -->
+  <polygon points="60,460 45,512 75,512" fill="#090f1c"/>
+  <polygon points="120,450 104,512 136,512" fill="#090f1c"/>
+  <polygon points="180,455 164,512 196,512" fill="#090f1c"/>
+  <polygon points="340,448 324,512 356,512" fill="#090f1c"/>
+  <polygon points="400,452 384,512 416,512" fill="#090f1c"/>
+  <polygon points="460,445 444,512 476,512" fill="#090f1c"/>
+  <!-- Gold rune circle -->
+  <circle cx="256" cy="220" r="90" fill="none" stroke="#c9a84c" stroke-width="2" opacity="0.5"/>
+  <circle cx="256" cy="220" r="75" fill="none" stroke="#c9a84c" stroke-width="1" opacity="0.3"/>
+  <!-- Rune lines -->
+  <line x1="256" y1="130" x2="256" y2="310" stroke="#c9a84c" stroke-width="1.5" opacity="0.4"/>
+  <line x1="166" y1="220" x2="346" y2="220" stroke="#c9a84c" stroke-width="1.5" opacity="0.4"/>
+  <line x1="193" y1="157" x2="319" y2="283" stroke="#c9a84c" stroke-width="1" opacity="0.3"/>
+  <line x1="319" y1="157" x2="193" y2="283" stroke="#c9a84c" stroke-width="1" opacity="0.3"/>
+  <!-- Center flame -->
+  <text x="256" y="248" text-anchor="middle" font-size="72" fill="#c9a84c" opacity="0.9" font-family="serif">✦</text>
+  <!-- Title -->
+  <text x="256" y="360" text-anchor="middle" font-size="36" fill="#c9a84c" opacity="0.85" font-family="Georgia,serif" letter-spacing="4">NOURISH</text>
+  <!-- Stars -->
+  <circle cx="80" cy="80" r="2" fill="white" opacity="0.6"/>
+  <circle cx="150" cy="50" r="1.5" fill="white" opacity="0.5"/>
+  <circle cx="380" cy="60" r="2" fill="white" opacity="0.6"/>
+  <circle cx="440" cy="100" r="1.5" fill="white" opacity="0.4"/>
+  <circle cx="320" cy="40" r="1" fill="white" opacity="0.7"/>
+  <circle cx="100" cy="130" r="1" fill="white" opacity="0.4"/>
+</svg>
